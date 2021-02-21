@@ -21,7 +21,7 @@ def bad_request
     error: 'Bad Request'
   }
 
-  return json res_data.to_json
+  return json res_data
 end
 
 def unauthorized
@@ -30,7 +30,7 @@ def unauthorized
     error: 'Unauthorized'
   }
 
-  return json res_data.to_json
+  return json res_data
 end
 
 def forbidden
@@ -39,7 +39,7 @@ def forbidden
     error: 'Forbidden'
   }
 
-  return json res_data.to_json
+  return json res_data
 end
 
 def not_found
@@ -48,7 +48,7 @@ def not_found
     error: 'Not Found'
   }
 
-  return json res_data.to_json
+  return json res_data
 end
 
 options '*' do
@@ -70,15 +70,6 @@ namespace '/api' do
       Example: "example data"
     }
 
-    json res_data.to_json
+    json res_data
   end
 end
-
-# get '/api/' do
-#   status 200
-#   res_data = [
-#     Example: "example data"
-#   ]
-
-#   json res_data.to_json
-# end
