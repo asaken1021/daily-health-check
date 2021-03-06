@@ -3,7 +3,10 @@ Bundler.setup
 require "sinatra/reloader"
 require "sinatra/activerecord"
 require "sinatra/namespace"
+require "rack/contrib"
 require "./database"
+
+# use Rack::JSONBodyParser
 
 configure do
   self.instance_eval do
@@ -64,12 +67,43 @@ before do
 end
 
 namespace '/api' do
-  get '/' do
-    status 200
-    res_data = {
-      Example: "example data"
-    }
+  namespace '/v1' do
+    get '/' do
+      status 200
+      res_data = {
+        Example: "example data"
+      }
 
-    json res_data
+      json res_data
+    end
+
+    get '/result' do
+      if params[:test] == "true"
+        results = Result.where(student_id: params[:student_id])
+        res_data = results.last
+
+        json res_data
+      end
+    end
+
+    post '/result' do
+      req_data = JSON.parse(request.body.read)
+
+      result = Result.create(
+        student_id: req_data["student_id"],
+        temperature: req_data["temperature"],
+        condition: req_data["condition"].to_json,
+        symptom: req_data["symptom"].to_json
+      )
+
+      return bad_request if !result.persisted?
+
+      status 200
+      res_data = {
+        response: "OK"
+      }
+
+      json res_data
+    end
   end
 end

@@ -12,7 +12,7 @@
 
 ActiveRecord::Schema.define(version: 2021_02_21_021430) do
 
-  create_table "result", force: :cascade do |t|
+  create_table "results", force: :cascade do |t|
     t.integer "student_id"
     t.float "temperature"
     t.string "condition"
