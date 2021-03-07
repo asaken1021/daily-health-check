@@ -4,6 +4,7 @@ require "sinatra/reloader"
 require "sinatra/activerecord"
 require "sinatra/namespace"
 require "rack/contrib"
+require "date"
 require "./database"
 
 # use Rack::JSONBodyParser
@@ -81,9 +82,12 @@ namespace '/api' do
       if params[:test] == "true"
         results = Result.where(student_id: params[:student_id])
         res_data = results.last
-
-        json res_data
+      else
+        results = Result.where(created_at: params[:date].in_time_zone.all_day)
+        res_data = results
       end
+
+      json res_data
     end
 
     post '/result' do
