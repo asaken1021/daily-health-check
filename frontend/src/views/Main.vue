@@ -16,4 +16,7 @@ export default {
 </script>
 
 <style scoped>
+.view-main {
+  height: calc(100vh - 112px - 1rem);
+}
 </style>

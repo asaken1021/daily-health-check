@@ -2,6 +2,8 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import BootstrapVue from 'bootstrap-vue'
 import Main from '../views/Main.vue'
+import Survey from '../views/Survey.vue'
+import Result from '../views/Result.vue'
 
 Vue.use(VueRouter)
 Vue.use(BootstrapVue)
@@ -14,6 +16,16 @@ const routes = [
     path: '/',
     name: 'Main',
     component: Main
+  },
+  {
+    path: '/survey',
+    name: 'Survey',
+    component: Survey
+  },
+  {
+    path: '/result',
+    name: 'Result',
+    component: Result
   }
 ]
 

@@ -109,5 +109,57 @@ namespace '/api' do
 
       json res_data
     end
+
+    get '/class' do
+      res_data = ClassName.all
+      json res_data
+    end
+
+    post '/class' do
+      req_data = JSON.parse(request.body.read)
+
+      ClassName.create(
+        class_name: req_data["name"]
+      )
+
+      status 200
+      res_data = {
+        response: "OK"
+      }
+
+      json res_data
+    end
+
+    get '/student' do
+      return bad_request if params[:class_name] == nil || params[:class_number] == nil
+      student = Student.find_by(class_name: params[:class_name], class_number: params[:class_number])
+
+      return not_found if student == nil
+
+      status 200
+      res_data = {
+        response: "OK",
+        student: student
+      }
+
+      json res_data
+    end
+
+    post '/student' do
+      req_data = JSON.parse(request.body.read)
+
+      Student.create(
+        class_name: req_data["class_name"],
+        class_number: req_data["class_number"],
+        name: req_data["name"]
+      )
+
+      status 200
+      res_data = {
+        response: "OK"
+      }
+
+      json res_data
+    end
   end
 end

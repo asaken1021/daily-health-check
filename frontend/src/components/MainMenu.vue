@@ -27,4 +27,7 @@ export default {
 .container {
   margin-top: 20px;
 }
+.component-mainmenu {
+  height: 100%;
+}
 </style>
