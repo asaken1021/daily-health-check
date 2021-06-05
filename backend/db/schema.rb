@@ -10,10 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_02_21_021430) do
+ActiveRecord::Schema.define(version: 2021_05_16_031321) do
+
+  create_table "class_names", force: :cascade do |t|
+    t.string "class_name"
+  end
 
   create_table "results", force: :cascade do |t|
-    t.integer "student_id"
+    t.string "class_name"
+    t.integer "class_number"
     t.float "temperature"
     t.string "condition"
     t.string "symptom"
@@ -22,7 +27,7 @@ ActiveRecord::Schema.define(version: 2021_02_21_021430) do
   end
 
   create_table "students", force: :cascade do |t|
-    t.string "class"
+    t.string "class_name"
     t.integer "class_number"
     t.string "name"
   end

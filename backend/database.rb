@@ -15,3 +15,7 @@ class Result < ActiveRecord::Base
   validates :symptom,
     presence: true
 end
+
+class ClassName < ActiveRecord::Base
+
+end
