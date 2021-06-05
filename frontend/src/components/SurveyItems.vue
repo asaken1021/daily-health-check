@@ -10,6 +10,7 @@
           id="input-class"
           v-model="form.selectedClass"
           :options="options.classes"
+          v-on:change="getName"
           required
         ></b-form-select>
       </b-form-group>
@@ -79,6 +80,10 @@
         </b-form-checkbox-group>
       </b-form-group>
     </b-form>
+
+    <b-button id="button-send" variant="primary" v-on:click="sendForm"
+      >送信</b-button
+    >
   </div>
 </template>
 
@@ -160,6 +165,16 @@ export default {
           console.log(error);
           this.form.name = error.message;
         })
+    },
+    sendForm: function () {
+      console.log("sendForm called");
+      api.post("/result", {
+        class_name: this.form.selectedClass,
+        class_number: this.form.number,
+        temperature: this.form.temperature,
+        condition: this.form.condition,
+        symptom: this.form.symptom
+      })
     }
   }
 }

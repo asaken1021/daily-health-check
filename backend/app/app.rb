@@ -80,7 +80,7 @@ namespace '/api' do
 
     get '/result' do
       if params[:test] == "true"
-        results = Result.where(student_id: params[:student_id])
+        results = Result.where(class_number: params[:class_number])
         res_data = results.last
       else
         results = Result.where(created_at: params[:date].in_time_zone.all_day)
@@ -94,7 +94,8 @@ namespace '/api' do
       req_data = JSON.parse(request.body.read)
 
       result = Result.create(
-        student_id: req_data["student_id"],
+        class_name: req_data["class_name"],
+        class_number: req_data["class_number"],
         temperature: req_data["temperature"],
         condition: req_data["condition"].to_json,
         symptom: req_data["symptom"].to_json

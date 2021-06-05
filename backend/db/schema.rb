@@ -17,7 +17,8 @@ ActiveRecord::Schema.define(version: 2021_05_16_031321) do
   end
 
   create_table "results", force: :cascade do |t|
-    t.integer "student_id"
+    t.string "class_name"
+    t.integer "class_number"
     t.float "temperature"
     t.string "condition"
     t.string "symptom"
