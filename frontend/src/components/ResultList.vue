@@ -25,7 +25,18 @@
       </b-form-group>
     </b-form>
 
-    <span>{{ results }}</span>
+    <b-table
+      striped
+      :items="results"
+      :fields="options.fields"
+      :tbody-tr-class="setRowColor"
+    >
+      <template #cell(name)="data">{{ searchName(data) }}</template>
+      <template #cell(temperature)="data">{{
+        setTemperatureText(data)
+      }}</template>
+      <template #cell(condition)="data">{{ setConditionText(data) }}</template>
+    </b-table>
   </div>
 </template>
 
@@ -48,9 +59,32 @@ export default {
         selectedClass: ""
       },
       options: {
-        classes: []
+        classes: [],
+        fields: [
+          {
+            key: "class_number",
+            label: "出席番号",
+            sortable: true
+          },
+          {
+            key: "name",
+            label: "名前",
+            sortable: false
+          },
+          {
+            key: "temperature",
+            label: "体温",
+            sortable: true
+          },
+          {
+            key: "condition",
+            label: "体調",
+            sortable: true
+          }
+        ]
       },
-      results: []
+      results: [],
+      nameTable: []
     }
   },
   mounted() {
@@ -70,10 +104,10 @@ export default {
   methods: {
     getResults: function () {
       console.log("ResultList getResults called");
-      api.get("result", {
+      api.get("/result", {
         params: {
           date: this.form.selectedDate,
-          class: this.form.selectedClass
+          class_name: this.form.selectedClass
         }
       })
         .then(response => {
@@ -82,6 +116,37 @@ export default {
             this.results = response.data;
           }
         })
+      api.get("/students", {
+        params: {
+          class_name: this.form.selectedClass
+        }
+      })
+        .then(response => {
+          if (response.status == 200) {
+            console.log(response);
+            this.nameTable = response.data.students
+          }
+        })
+    },
+    searchName: function (data) {
+      console.log(data);
+      try {
+        return this.nameTable.filter(student => student.class_number == data.item.class_number)[0].name
+      } catch (error) {
+        return "Undefined"
+      }
+    },
+    setRowColor: function (item, type) {
+      if (!item || type != "row") return
+      if (item.temperature >= 37.5) return "table-warning"
+    },
+    setTemperatureText: function (data) {
+      return Number.parseFloat(data.item.temperature).toFixed(1)
+    },
+    setConditionText: function (data) {
+      if (data.item.condition == "\"good\"") return "体調は良い"
+      else if (data.item.condition == "\"not_good\"") return "少し体調が悪い"
+      else if (data.item.condition == "\"bad\"") return "体調は悪い"
     }
   }
 }
