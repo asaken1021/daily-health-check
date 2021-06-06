@@ -14,3 +14,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.view-result {
+  margin-top: 20px;
+}
+</style>

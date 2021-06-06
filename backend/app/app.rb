@@ -83,7 +83,7 @@ namespace '/api' do
         results = Result.where(class_number: params[:class_number])
         res_data = results.last
       else
-        results = Result.where(created_at: params[:date].in_time_zone.all_day)
+        results = Result.where(created_at: params[:date].in_time_zone.all_day, class_name: params[:class])
         res_data = results
       end
 
