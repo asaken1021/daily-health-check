@@ -10,7 +10,7 @@
           id="input-class"
           v-model="form.selectedClass"
           :options="options.classes"
-          v-on:change="getName"
+          @change="getName"
           required
         ></b-form-select>
       </b-form-group>
@@ -23,7 +23,7 @@
         <b-form-input
           id="input-number"
           v-model="form.number"
-          v-on:change="getName"
+          @change="getName"
           required
         ></b-form-input>
       </b-form-group>
@@ -133,18 +133,16 @@ export default {
     }
   },
   mounted() {
-    this.$nextTick(function () {
-      console.log("SurveyItems mounted nextTick called");
-      api.get("/class")
-        .then(response => {
-          if (response.status == 200) {
-            console.log(response);
-            for (var da of response.data) {
-              this.options.classes.push(da.class_name);
-            }
-          }
-        });
-    });
+    console.log("SurveyItems mounted nextTick called");
+    api.get("/class")
+      .then(response => {
+        if (response.status != 200) return
+
+        console.log(response);
+        for (var da of response.data) {
+          this.options.classes.push(da.class_name);
+        }
+      });
   },
   methods: {
     getName: function () {
@@ -156,10 +154,10 @@ export default {
         }
       })
         .then(response => {
-          if (response.status == 200) {
-            console.log(response);
-            this.form.name = response.data.student.name;
-          }
+          if (response.status != 200) return
+
+          console.log(response);
+          this.form.name = response.data.student.name;
         })
         .catch(error => {
           console.log(error);

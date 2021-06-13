@@ -83,7 +83,7 @@ namespace '/api' do
         results = Result.where(class_number: params[:class_number])
         res_data = results.last
       else
-        results = Result.where(created_at: params[:date].in_time_zone.all_day)
+        results = Result.where(created_at: params[:date].in_time_zone.all_day, class_name: params[:class_name])
         res_data = results
       end
 
@@ -158,6 +158,21 @@ namespace '/api' do
       status 200
       res_data = {
         response: "OK"
+      }
+
+      json res_data
+    end
+
+    get '/students' do
+      return bad_request if params[:class_name] == nil
+      students = Student.where(class_name: params[:class_name])
+
+      return not_found if students == nil
+
+      status 200
+      res_data = {
+        response: "OK",
+        students: students
       }
 
       json res_data
