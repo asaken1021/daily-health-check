@@ -133,18 +133,16 @@ export default {
     }
   },
   mounted() {
-    this.$nextTick(function () {
-      console.log("SurveyItems mounted nextTick called");
-      api.get("/class")
-        .then(response => {
-          if (response.status != 200) return
+    console.log("SurveyItems mounted nextTick called");
+    api.get("/class")
+      .then(response => {
+        if (response.status != 200) return
 
-          console.log(response);
-          for (var da of response.data) {
-            this.options.classes.push(da.class_name);
-          }
-        });
-    });
+        console.log(response);
+        for (var da of response.data) {
+          this.options.classes.push(da.class_name);
+        }
+      });
   },
   methods: {
     getName: function () {

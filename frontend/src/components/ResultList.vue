@@ -83,18 +83,16 @@ export default {
     }
   },
   mounted() {
-    this.$nextTick(function () {
-      console.log("ResultList mounted nextTick called");
-      api.get("/class")
-        .then(response => {
-          if (response.status != 200) return
+    console.log("ResultList mounted called");
+    api.get("/class")
+      .then(response => {
+        if (response.status != 200) return
 
-          console.log("class", response);
-          for (var da of response.data) {
-            this.options.classes.push(da.class_name);
-          }
-        })
-    })
+        console.log("class", response);
+        for (var da of response.data) {
+          this.options.classes.push(da.class_name);
+        }
+      })
   },
   methods: {
     getResults: async function () {
