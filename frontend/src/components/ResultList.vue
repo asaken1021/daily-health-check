@@ -125,8 +125,39 @@ export default {
     }
   },
   mounted() {
+    this.$nextTick(function () {
+      api.interceptors.response.use(response => { console.log("api interceptors called"); return response }), async error => {
+        console.log("error", error);
+        if (error.response.status == 401 && !error.config.isRetried) {
+          console.log("token refresh called")
+          await api.put("/session", {
+            refresh_token: this.$store.getters.getUserState.refresh_token
+          })
+            .then(response => {
+              this.$store.commit("setUserState", {
+                userState: {
+                  id: response.data.id,
+                  token: response.data.token,
+                  refresh_token: response.data.refresh_token
+                }
+              })
+            })
+          error.config.isRetried = true;
+          const data = JSON.parse(error.config.data);
+          data.token = this.$store.getters.getUserState.token;
+          error.config.data = data;
+
+          return api(error.config);
+        }
+      }
+    });
+
     console.log("ResultList mounted called");
-    api.get("/class")
+    api.get("/class", {
+      params: {
+        token: this.$store.getters.getUserState.token
+      }
+    })
       .then(response => {
         if (response.status != 200) return
 
@@ -141,7 +172,8 @@ export default {
       console.log("ResultList getResults called");
       await api.get("/students", {
         params: {
-          class_name: this.form.selectedClass
+          class_name: this.form.selectedClass,
+          token: this.$store.getters.getUserState.token
         }
       })
         .then(response => {
@@ -153,7 +185,8 @@ export default {
       api.get("/result", {
         params: {
           date: this.form.selectedDate,
-          class_name: this.form.selectedClass
+          class_name: this.form.selectedClass,
+          token: this.$store.getters.getUserState.token
         }
       })
         .then(response => {
