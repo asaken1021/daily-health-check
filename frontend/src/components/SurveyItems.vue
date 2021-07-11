@@ -141,52 +141,54 @@ export default {
       }
     }
   },
-  mounted() {
+  async mounted() {
     console.log("SurveyItems mounted called");
-    api.get("/class")
-      .then(response => {
-        if (response.status != 200) return
+    const response = await api.get("/class")
+    if (response.status != 200) return
 
-        console.log(response);
-        for (let da of response.data) {
-          this.options.classes.push(da.class_name);
-        }
-      });
+    console.log(response);
+    for (let da of response.data) {
+      this.options.classes.push(da.class_name);
+    }
   },
   methods: {
-    getName: function () {
+    getName: async function () {
       console.log("getName called");
-      api.get("/student", {
+      const response = await api.get("/student", {
         params: {
           class_name: this.form.selectedClass,
           class_number: this.form.number
         }
       })
-        .then(response => {
-          if (response.status != 200) return
+        .catch(error => error.response)
 
-          console.log(response);
-          this.form.name = response.data.student.name;
-        })
-        .catch(error => {
-          console.log(error);
-          this.form.name = error.message;
-        })
+      console.log(response);
+      if (response.status != 200) {
+        this.form.name = response.statusText;
+        return
+      }
+
+      this.form.name = response.data.student.name;
     },
-    sendForm: function () {
+    sendForm: async function () {
       console.log("sendForm called");
-      api.post("/result", {
+      const response = await api.post("/result", {
         class_name: this.form.selectedClass,
         class_number: this.form.number,
         temperature: this.form.temperature,
         condition: this.form.condition,
         symptom: this.form.symptom
       })
-        .then(response => {
-          if (response.status != 200) return
 
-          this.$bvModal.show('modal-form_sent');
-        })
+      console.log(response);
+      if (response.status != 200) return
+
+      this.$bvModal.show('modal-form_sent');
+      // .then(response => {
+      //   if (response.status != 200) return
+
+      //   this.$bvModal.show('modal-form_sent');
+      // })
     }
   }
 }
