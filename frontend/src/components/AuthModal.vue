@@ -96,54 +96,56 @@ export default {
     }
   },
   methods: {
-    registration: function () {
-      api.post("/users", {
+    registration: async function () {
+      const response = await api.post("/users", {
         name: this.user.name,
         email: this.user.email,
         password: this.user.password,
         password_confirmation: this.user.password_confirmation,
         shared_key: this.user.shared_key
       })
-        .then((response) => {
-          if (response.status != 200) return
+        .catch(error => error.response)
 
-          this.$store.commit("setUserState", {
-            userState: {
-              id: response.data.id,
-              token: response.data.token,
-              refresh_token: response.data.refresh_token
-            }
-          })
+      console.log(response);
+      if (response.status != 200) return
 
-          this.$bvModal.hide("modal-registration")
+      this.$store.commit("setUserState", {
+        userState: {
+          id: response.data.id,
+          token: response.data.token,
+          refresh_token: response.data.refresh_token
+        }
+      })
 
-          this.$router.push({
-            path: "/result"
-          })
-        })
+      this.$bvModal.hide('modal-registration')
+
+      this.$router.push({
+        path: "/result"
+      })
     },
-    login: function () {
-      api.post("/session", {
+    login: async function () {
+      const response = await api.post("/session", {
         email: this.user.email,
         password: this.user.password
       })
-        .then((response) => {
-          if (response.status != 200) return
+        .catch(error => error.response)
 
-          this.$store.commit("setUserState", {
-            userState: {
-              id: response.data.id,
-              token: response.data.token,
-              refresh_token: response.data.refresh_token
-            }
-          })
+      console.log(response);
+      if (response.status != 200) return
 
-          this.$bvModal.hide("modal-auth")
+      this.$store.commit("setUserState", {
+        userState: {
+          id: response.data.id,
+          token: response.data.token,
+          refresh_token: response.data.refresh_token
+        }
+      })
 
-          this.$router.push({
-            path: "/result"
-          })
-        })
+      this.$bvModal.hide('modal-auth')
+
+      this.$router.push({
+        path: "/result"
+      })
     }
   }
 }

@@ -124,28 +124,35 @@ export default {
       nameTable: []
     }
   },
-  mounted() {
+  async mounted() {
     this.$nextTick(function () {
-      api.interceptors.response.use(response => { console.log("api interceptors called"); return response }, async error => {
+      api.interceptors.response.use(response => { console.log("api interceptors called"); console.log(response); return response }, async error => {
         console.log("error", error);
         if (error.response.status == 401 && !error.config.isRetried) {
-          console.log("token refresh called")
-          await api.put("/session", {
+          console.log("token refresh called");
+          const response = await api.put("/session", {
             refresh_token: this.$store.getters.getUserState.refresh_token
           })
-            .then(response => {
-              this.$store.commit("setUserState", {
-                userState: {
-                  id: response.data.id,
-                  token: response.data.token,
-                  refresh_token: response.data.refresh_token
-                }
-              })
-            })
+            .catch(error => error.response)
+
           error.config.isRetried = true;
-          const data = JSON.parse(error.config.data);
-          data.token = this.$store.getters.getUserState.token;
-          error.config.data = data;
+
+          if (response.status != 200) {
+            console.log("token refresh error");
+            return
+          }
+
+          this.$store.commit("setUserState", {
+            userState: {
+              id: response.data.id,
+              token: response.data.token,
+              refresh_token: response.data.refresh_token
+            }
+          })
+
+          const params = error.config.params;
+          params.token = this.$store.getters.getUserState.token;
+          error.config.params = params;
 
           return api(error.config);
         }
@@ -153,69 +160,68 @@ export default {
     });
 
     console.log("ResultList mounted called");
-    api.get("/class", {
+    const response = await api.get("/class", {
       params: {
         token: this.$store.getters.getUserState.token
       }
     })
-      .then(response => {
-        if (response.status != 200) return
+      .catch(error => error.response)
 
-        console.log("class", response);
-        for (let da of response.data) {
-          this.options.classes.push(da.class_name);
-        }
-      })
+    console.log(response);
+    if (response.status != 200) return
+
+    for (let da of response.data) {
+      this.options.classes.push(da.class_name);
+    }
   },
   methods: {
     getResults: async function () {
       console.log("ResultList getResults called");
-      await api.get("/students", {
+      const response = await api.get("/students", {
         params: {
           class_name: this.form.selectedClass,
           token: this.$store.getters.getUserState.token
         }
       })
-        .then(response => {
-          if (response.status != 200) return
+        .catch(error => error)
 
-          console.log("nameTable", response);
-          this.nameTable = response.data.students
-        })
-      api.get("/result", {
+      console.log(response);
+      if (response.status != 200) return
+
+      this.nameTable = response.data.students
+
+      const response2 = await api.get("/result", {
         params: {
           date: this.form.selectedDate,
           class_name: this.form.selectedClass,
           token: this.$store.getters.getUserState.token
         }
       })
-        .then(response => {
-          if (response.status != 200) return
+        .catch(error => error.response)
 
-          console.log("results", response);
-          this.results = [];
-          for (let da of response.data) {
-            try {
-              da.name = this.nameTable.filter(student => student.class_number == da.class_number)[0].name
-            } catch (error) {
-              console.log("An error occurred:", da, error);
-              if (error.name == "TypeError") da.name = "Error: Name not found"
-              else da.name = "Error: " + error.name
-            }
+      console.log(response);
+      if (response2.status != 200) return
 
-            da.temperature = Number.parseFloat(da.temperature).toFixed(1);
+      this.results = [];
+      for (let da of response2.data) {
+        try {
+          da.name = this.nameTable.filter(student => student.class_number == da.class_number)[0].name
+        } catch (error) {
+          console.log("An error occurred:", da, error);
+          if (error.name == "TypeError") da.name = "Error: Name not found"
+          else da.name = "Error: " + error.name
+        }
 
-            if (JSON.parse(da.condition) == "good") da.conditionText = "体調は良い"
-            if (JSON.parse(da.condition) == "not_good") da.conditionText = "少し体調が悪い"
-            if (JSON.parse(da.condition) == "bad") da.conditionText = "体調が悪い"
+        da.temperature = Number.parseFloat(da.temperature).toFixed(1);
 
-            da.symptomText = this.setSymptomText(da.symptom);
+        if (JSON.parse(da.condition) == "good") da.conditionText = "体調は良い"
+        if (JSON.parse(da.condition) == "not_good") da.conditionText = "少し体調が悪い"
+        if (JSON.parse(da.condition) == "bad") da.conditionText = "体調が悪い"
 
-            console.log("da", da);
+        da.symptomText = this.setSymptomText(da.symptom);
 
-            this.results.push(da);
-          }
-        })
+        this.results.push(da);
+      }
     },
     setRowColor: function (item, type) {
       if (!item || type != "row") return
