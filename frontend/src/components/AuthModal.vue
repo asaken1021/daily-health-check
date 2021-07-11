@@ -58,6 +58,14 @@
         <b-button variant="secondary" @click="$bvModal.hide('modal-auth')"
           >キャンセル</b-button
         >
+        <b-button
+          variant="primary"
+          @click="
+            $bvModal.hide('modal-auth');
+            $bvModal.show('modal-registration');
+          "
+          >新規登録</b-button
+        >
         <b-button variant="primary" @click="login">ログイン</b-button>
       </template>
     </b-modal>
