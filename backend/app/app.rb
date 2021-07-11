@@ -60,11 +60,11 @@ def not_found
   return json res_data
 end
 
-def JWTencode(payload, privkey)
+def jwt_encode(payload, privkey)
   return JWT.encode(payload, privkey, 'RS256')
 end
 
-def JWTdecode(token, pubkey)
+def jwt_decode(token, pubkey)
   return JWT.decode(token, pubkey, true, { algorithm: 'RS256' })[0]
 end
 
@@ -93,17 +93,15 @@ namespace '/api' do
 
     before do
       req_plain = request.body.read
-      if req_plain == ""
-        req_data = JSON.parse("{}")
+      if req_plain.empty?
+        req_data = {}
       else
         req_data = JSON.parse(req_plain)
       end
 
       if @env["REQUEST_METHOD"] != "OPTIONS"
-        if params["token"] != nil
-          return halt unauthorized if !token_check(params["token"], pubkey)
-        elsif req_data["token"] != nil
-          return halt unauthorized if !token_check(req_data["token"], pubkey)
+        return halt unauthorized if !params["token"].nil? && !token_check(params["token"], pubkey)
+        return halt unauthorized if !req_data["token"].nil? !token_check(req_data["token"], pubkey)
         end
       end
     end
@@ -123,13 +121,13 @@ namespace '/api' do
         res_data = results.last
       else
         token = params["token"]
-        return bad_request if token == nil
+        return bad_request if token.nil?
 
-        user_id = JWTdecode(token, pubkey)["id"]
-        return bad_request if user_id == nil
+        user_id = jwt_decode(token, pubkey)["id"]
+        return bad_request if user_id.nil?
 
-        user = User.find_by(id: user_id)
-        return unauthorized if user == nil
+        user = User.find(user_id)
+        return unauthorized if user.nil?
 
         results = Result.where(created_at: params[:date].in_time_zone.all_day, class_name: params[:class_name])
         res_data = results
@@ -178,7 +176,7 @@ namespace '/api' do
     get '/student' do
       student = Student.find_by(class_name: params[:class_name], class_number: params[:class_number])
 
-      return not_found if student == nil
+      return not_found if student.nil?
 
       status 200
       res_data = {
@@ -206,18 +204,18 @@ namespace '/api' do
 
     get '/students' do
       token = params["token"]
-      return bad_request if token == nil
+      return bad_request if token.nil?
 
-      user_id = JWTdecode(token, pubkey)["id"]
-      return bad_request if user_id == nil
+      user_id = jwt_decode(token, pubkey)["id"]
+      return bad_request if user_id.nil?
 
-      user = User.find_by(id: user_id)
-      return unauthorized if user == nil
+      user = User.find(user_id)
+      return unauthorized if user.nil?
 
-      return bad_request if params[:class_name] == nil
+      return bad_request if params[:class_name].nil?
       students = Student.where(class_name: params[:class_name])
 
-      return not_found if students == nil
+      return not_found if students.nil?
 
       status 200
       res_data = {
@@ -245,7 +243,7 @@ namespace '/api' do
     end
 
     post '/users' do
-      return bad_request if Shared_Keys.find_by(key: req_data["shared_key"]) == nil
+      return bad_request if Shared_Keys.find_by(key: req_data["shared_key"]).nil?
 
       user = User.create(
         name: req_data["name"],
@@ -266,8 +264,8 @@ namespace '/api' do
         exp: Time.now.to_i + 3600
       }
 
-      token = JWTencode(payload, privkey)
-      refresh_token = JWTencode(refresh_payload, refresh_privkey)
+      token = jwt_encode(payload, privkey)
+      refresh_token = jwt_encode(refresh_payload, refresh_privkey)
 
       res_data = {
         id: user.id,
@@ -280,7 +278,7 @@ namespace '/api' do
 
     post '/session' do
       user = User.find_by(email: req_data["email"])
-      return bad_request if user == nil
+      return bad_request if user.nil?
       return bad_request if !user.authenticate(req_data["password"])
 
       status 200
@@ -293,8 +291,8 @@ namespace '/api' do
         exp: Time.now.to_i + 3600
       }
 
-      token = JWTencode(payload, privkey)
-      refresh_token = JWTencode(refresh_payload, refresh_privkey)
+      token = jwt_encode(payload, privkey)
+      refresh_token = jwt_encode(refresh_payload, refresh_privkey)
 
       res_data = {
         id: user.id,
@@ -307,13 +305,13 @@ namespace '/api' do
 
     put "/session" do
       refresh_token = req_data["refresh_token"]
-      return bad_request if refresh_token == nil
+      return bad_request if refresh_token.nil?
 
-      user_id = JWTdecode(refresh_token, refresh_pubkey)["id"]
-      return bad_request if user_id == nil
+      user_id = jwt_decode(refresh_token, refresh_pubkey)["id"]
+      return bad_request if user_id.nil?
 
-      user = User.find_by(id: user_id)
-      return unauthorized if user == nil
+      user = User.find(user_id)
+      return unauthorized if user.nil?
 
       payload = {
         id: user.id,
@@ -324,8 +322,8 @@ namespace '/api' do
         exp: Time.now.to_i + 3600
       }
 
-      token = JWTencode(payload, privkey)
-      refresh_token = JWTencode(refresh_payload, refresh_privkey)
+      token = jwt_encode(payload, privkey)
+      refresh_token = jwt_encode(refresh_payload, refresh_privkey)
 
       res_data = {
         id: user.id,
