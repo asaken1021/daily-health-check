@@ -126,7 +126,7 @@ export default {
   },
   mounted() {
     this.$nextTick(function () {
-      api.interceptors.response.use(response => { console.log("api interceptors called"); return response }), async error => {
+      api.interceptors.response.use(response => { console.log("api interceptors called"); return response }, async error => {
         console.log("error", error);
         if (error.response.status == 401 && !error.config.isRetried) {
           console.log("token refresh called")
@@ -149,7 +149,7 @@ export default {
 
           return api(error.config);
         }
-      }
+      })
     });
 
     console.log("ResultList mounted called");

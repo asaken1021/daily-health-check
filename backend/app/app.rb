@@ -162,14 +162,14 @@ namespace '/api' do
     end
 
     get '/class' do
-      token = params["token"]
-      return bad_request if token == nil
+      # token = params["token"]
+      # return bad_request if token == nil
 
-      user_id = JWTdecode(token, pubkey)["id"]
-      return bad_request if user_id == nil
+      # user_id = JWTdecode(token, pubkey)["id"]
+      # return bad_request if user_id == nil
 
-      user = User.find_by(id: user_id)
-      return unauthorized if user == nil
+      # user = User.find_by(id: user_id)
+      # return unauthorized if user == nil
 
       res_data = ClassName.all
       json res_data
@@ -191,16 +191,16 @@ namespace '/api' do
     end
 
     get '/student' do
-      token = params["token"]
-      return bad_request if token == nil
+      # token = params["token"]
+      # return bad_request if token == nil
 
-      user_id = JWTdecode(token, pubkey)["id"]
-      return bad_request if user_id == nil
+      # user_id = JWTdecode(token, pubkey)["id"]
+      # return bad_request if user_id == nil
 
-      user = User.find_by(id: user_id)
-      return unauthorized if user == nil
+      # user = User.find_by(id: user_id)
+      # return unauthorized if user == nil
 
-      return bad_request if params[:class_name] == nil || params[:class_number] == nil
+      # return bad_request if params[:class_name] == nil || params[:class_number] == nil
       student = Student.find_by(class_name: params[:class_name], class_number: params[:class_number])
 
       return not_found if student == nil
@@ -337,7 +337,7 @@ namespace '/api' do
       refresh_token = req_data["refresh_token"]
       return bad_request if refresh_token == nil
 
-      user_id = JWTdecode(refresh_token, refresh_pubkey)
+      user_id = JWTdecode(refresh_token, refresh_pubkey)["id"]
       return bad_request if user_id == nil
 
       user = User.find_by(id: user_id)
