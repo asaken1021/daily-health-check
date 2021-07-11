@@ -81,9 +81,18 @@
       </b-form-group>
     </b-form>
 
-    <b-button id="button-send" variant="primary" v-on:click="sendForm"
+    <b-button id="button-send" variant="primary" @click="sendForm"
       >送信</b-button
     >
+
+    <b-modal id="modal-form_sent" title="送信完了" size="lg" centered>
+      <p>健康調査アンケートを送信しました。</p>
+      <template v-slot:modal-footer>
+        <b-button variant="primary" @click="$bvModal.hide('modal-form_sent')"
+          >OK</b-button
+        >
+      </template>
+    </b-modal>
   </div>
 </template>
 
@@ -124,7 +133,7 @@ export default {
           { text: "下痢", value: "diarrhea" },
           { text: "嘔吐", value: "vomit" },
           { text: "頭痛", value: "headache" },
-          { text: "発熱・悪寒", value: "ferver" },
+          { text: "発熱・悪寒", value: "fever" },
           { text: "息切れ・呼吸困難", value: "dyspnea" },
           { text: "味覚・嗅覚障害", value: "dysgeusia" },
           { text: "筋肉痛・倦怠感", value: "malaise" }
@@ -133,13 +142,13 @@ export default {
     }
   },
   mounted() {
-    console.log("SurveyItems mounted nextTick called");
+    console.log("SurveyItems mounted called");
     api.get("/class")
       .then(response => {
         if (response.status != 200) return
 
         console.log(response);
-        for (var da of response.data) {
+        for (let da of response.data) {
           this.options.classes.push(da.class_name);
         }
       });
@@ -173,6 +182,11 @@ export default {
         condition: this.form.condition,
         symptom: this.form.symptom
       })
+        .then(response => {
+          if (response.status != 200) return
+
+          this.$bvModal.show('modal-form_sent');
+        })
     }
   }
 }
