@@ -24,6 +24,19 @@ pubkey = privkey.public_key
 refresh_privkey = OpenSSL::PKey::RSA.generate(2048)
 refresh_pubkey = refresh_privkey.public_key
 
+condition_hash = {
+  "cough" => "咳・くしゃみが出る",
+  "throat" => "喉が痛い",
+  "stomachache" => "腹痛",
+  "diarrhea" => "下痢",
+  "vomit" => "嘔吐",
+  "headache" => "頭痛",
+  "fever" => "発熱・悪寒",
+  "dyspnea" => "息切れ・呼吸困難",
+  "dysgeusia" => "味覚・嗅覚障害",
+  "malaise" => "筋肉痛・倦怠感"
+}
+
 def bad_request
   status 400
   res_data = {
@@ -88,11 +101,6 @@ before do
 end
 
 namespace '/api' do
-  namespace '/dev' do
-    get '/bind' do
-      binding.pry
-    end
-  end
   namespace '/v1' do
     req_data = nil
 
@@ -121,7 +129,7 @@ namespace '/api' do
 
     get '/results' do
       token = params["token"]
-       return bad_request if token.nil?
+      return bad_request if token.nil?
 
       user_id = jwt_decode(token, pubkey)["id"]
       return bad_request if user_id.nil?
@@ -149,18 +157,11 @@ namespace '/api' do
         result_tmp.condition = "少し体調が悪い" if result_tmp.condition == "not_good"
         result_tmp.condition = "体調が悪い" if result_tmp.condition == "bad"
 
-        result_tmp_symp.map!{|x| x == "cough" ? "咳・くしゃみが出る" : x}
-        result_tmp_symp.map!{|x| x == "throat" ? "喉が痛い" : x}
-        result_tmp_symp.map!{|x| x == "stomachache" ? "腹痛" : x}
-        result_tmp_symp.map!{|x| x == "diarrhea" ? "下痢" : x}
-        result_tmp_symp.map!{|x| x == "vomit" ? "嘔吐" : x}
-        result_tmp_symp.map!{|x| x == "headache" ? "頭痛" : x}
-        result_tmp_symp.map!{|x| x == "fever" ? "発熱・悪寒" : x}
-        result_tmp_symp.map!{|x| x == "dyspnea" ? "息切れ・呼吸困難" : x}
-        result_tmp_symp.map!{|x| x == "dysgeusia" ? "味覚・嗅覚障害" : x}
-        result_tmp_symp.map!{|x| x == "malaise" ? "筋肉痛・倦怠感" : x}
+        result_tmp_symp.map! do |condition|
+          condition_hash.keys.include?(condition) ? condition_hash[condition] : condition
+        end
 
-        result_tmp.symptom = result_tmp_symp.join(", ")
+        result_tmp.symptom = result_tmp_symp.join("，")
 
         results.push(
           result: result_tmp,
