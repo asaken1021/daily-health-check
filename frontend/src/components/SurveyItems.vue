@@ -117,7 +117,8 @@ export default {
         name: "",
         temperature: null,
         condition: null,
-        symptom: []
+        symptom: [],
+        student: null
       },
       options: {
         classes: [],
@@ -143,12 +144,12 @@ export default {
   },
   async mounted() {
     console.log("SurveyItems mounted called");
-    const response = await api.get("/class")
+    const response = await api.get("/classes")
     if (response.status != 200) return
 
     console.log(response);
     for (let da of response.data) {
-      this.options.classes.push(da.class_name);
+      this.options.classes.push(da.name);
     }
   },
   methods: {
@@ -169,12 +170,13 @@ export default {
       }
 
       this.form.name = response.data.student.name;
+      this.form.student = response.data.student;
     },
     sendForm: async function () {
       console.log("sendForm called");
-      const response = await api.post("/result", {
+      const response = await api.post("/results", {
+        student_id: this.form.student.id,
         class_name: this.form.selectedClass,
-        class_number: this.form.number,
         temperature: this.form.temperature,
         condition: this.form.condition,
         symptom: this.form.symptom

@@ -2,7 +2,7 @@
   <div id="app">
     <b-navbar togglable="lg" class="nav-custom">
       <div class="container">
-        <b-navbar-brand class="nav-text-color" href="/"
+        <b-navbar-brand class="nav-text-color"
           >健康調査アンケート</b-navbar-brand
         >
       </div>

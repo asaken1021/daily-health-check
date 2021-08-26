@@ -10,15 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_27_055927) do
+ActiveRecord::Schema.define(version: 2021_08_07_052232) do
 
   create_table "class_names", force: :cascade do |t|
-    t.string "class_name"
+    t.string "name"
+  end
+
+  create_table "result_class_names", force: :cascade do |t|
+    t.integer "result_id"
+    t.integer "class_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "results", force: :cascade do |t|
-    t.string "class_name"
-    t.integer "class_number"
     t.float "temperature"
     t.string "condition"
     t.string "symptom"
@@ -30,8 +35,19 @@ ActiveRecord::Schema.define(version: 2021_06_27_055927) do
     t.string "key"
   end
 
+  create_table "student_class_names", force: :cascade do |t|
+    t.integer "student_id"
+    t.integer "class_id"
+  end
+
+  create_table "student_results", force: :cascade do |t|
+    t.integer "student_id"
+    t.integer "result_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
   create_table "students", force: :cascade do |t|
-    t.string "class_name"
     t.integer "class_number"
     t.string "name"
   end
