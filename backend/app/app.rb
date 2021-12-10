@@ -7,6 +7,7 @@ require "rack/contrib"
 require "date"
 require "./database"
 require "jwt"
+require "csv"
 
 configure do
   self.instance_eval do
@@ -106,13 +107,19 @@ namespace '/api' do
 
     before do
       req_plain = request.body.read
+
+      if request.env["PATH_INFO"] == "/api/v1/manage"
+        req_data = request.body
+        return
+      end
+
       if req_plain.empty?
         req_data = {}
       else
         req_data = JSON.parse(req_plain)
       end
 
-      if @env["REQUEST_METHOD"] != "OPTIONS"
+      if request.env["REQUEST_METHOD"] != "OPTIONS"
         return halt unauthorized if !params["token"].nil? && !token_check(params["token"], pubkey)
         return halt unauthorized if !req_data["token"].nil? && !token_check(req_data["token"], pubkey)
       end
@@ -399,6 +406,47 @@ namespace '/api' do
         id: user.id,
         token: token,
         refresh_token: refresh_token
+      }
+
+      json res_data
+    end
+
+    post "/manage" do
+      csv = CSV.table(request.params["file"][:tempfile].path, encoding: 'bom|utf-8').by_row
+      binding.pry
+      if csv[0][:type] == "INIT"
+        if csv[0][:data1] == "STUDENT"
+          class_name = csv[1][:data1]
+          return bad_request if class_name.nil?
+
+          class_id = ClassName.find_by(name: class_name).id
+          return bad_request if class_id.nil?
+
+          csv.each do |c|
+            if c[:type] == "STUDENT"
+              student = Student.create(
+                class_number: c[:data1],
+                name: c[:data2]
+              )
+              StudentClassName.create(
+                student_id: student.id,
+                class_id: class_id
+              )
+            end
+          end
+        elsif csv[0][:data1] == "CLASS"
+          csv.each do |c|
+            if c[:type] == "CLASS"
+              ClassName.create(
+                name: c[:data1]
+              )
+            end
+          end
+        end
+      end
+
+      res_data = {
+        response: "OK"
       }
 
       json res_data

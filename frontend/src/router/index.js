@@ -4,6 +4,7 @@ import BootstrapVue from 'bootstrap-vue'
 import Main from '../views/Main.vue'
 import Survey from '../views/Survey.vue'
 import Result from '../views/Result.vue'
+import Settings from '../views/Settings.vue'
 
 Vue.use(VueRouter)
 Vue.use(BootstrapVue)
@@ -26,6 +27,11 @@ const routes = [
     path: '/result',
     name: 'Result',
     component: Result
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: Settings
   }
 ]
 
